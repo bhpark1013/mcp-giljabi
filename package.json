@@ -1,0 +1,34 @@
+{
+  "name": "mcp-giljabi",
+  "version": "1.0.0",
+  "description": "MCP 길잡이 - PlayMCP에서 적합한 MCP를 찾아주는 서비스",
+  "main": "dist/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "prepare-embeddings": "tsx src/scripts/prepareEmbeddings.ts",
+    "test-search": "tsx src/scripts/testSearch.ts"
+  },
+  "keywords": [
+    "mcp",
+    "playmcp",
+    "kakao",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "openai": "^6.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
