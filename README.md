@@ -10,7 +10,7 @@
 ## 사전 요구사항
 
 1. **Node.js** (v18 이상)
-2. **OpenAI API Key**
+2. **Google Gemini API Key** (무료)
 
 ## 설치
 
@@ -23,8 +23,10 @@ npm install
 
 ```bash
 cp .env.example .env
-# .env 파일에 OPENAI_API_KEY 설정
+# .env 파일에 GEMINI_API_KEY 설정
 ```
+
+Gemini API Key 발급: https://aistudio.google.com/app/apikey
 
 ## 빌드
 
@@ -36,6 +38,45 @@ npm run build
 
 ```bash
 npm start
+```
+
+## 로컬 테스트 방법
+
+### 1. 검색 기능 테스트
+
+```bash
+# .env 파일에 GEMINI_API_KEY 설정 후
+npm run test-search
+```
+
+### 2. MCP Inspector로 테스트
+
+MCP Inspector는 MCP 서버를 웹 UI로 테스트할 수 있는 도구입니다.
+
+```bash
+# 빌드 후 실행
+npm run build
+GEMINI_API_KEY=your-api-key npm run inspector
+```
+
+브라우저에서 http://localhost:5173 접속하여 테스트할 수 있습니다.
+
+### 3. Claude Desktop에서 로컬 테스트
+
+`~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "mcp-giljabi": {
+      "command": "node",
+      "args": ["/path/to/mcp-giljabi/dist/index.js"],
+      "env": {
+        "GEMINI_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
 ```
 
 ## Railway 배포
@@ -57,29 +98,11 @@ git push -u origin main
 3. "New Project" → "Deploy from GitHub repo"
 4. 레포지토리 선택
 5. 환경 변수 설정:
-   - `OPENAI_API_KEY`: OpenAI API 키
+   - `GEMINI_API_KEY`: Gemini API 키
 
 ### 3. 배포 완료
 
 Railway가 자동으로 빌드 및 배포합니다.
-
-## Claude Desktop 설정 (로컬 실행 시)
-
-`~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "mcp-giljabi": {
-      "command": "node",
-      "args": ["/path/to/mcp-giljabi/dist/index.js"],
-      "env": {
-        "OPENAI_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
 
 ## 사용 예시
 
@@ -126,7 +149,7 @@ Railway가 자동으로 빌드 및 배포합니다.
 
 - TypeScript / Node.js
 - MCP SDK (@modelcontextprotocol/sdk)
-- OpenAI Embeddings (text-embedding-3-small)
+- Google Gemini Embeddings (gemini-embedding-001)
 - 하이브리드 검색 (키워드 매칭 60% + 시맨틱 검색 40%)
   - 한국어 키워드 매핑으로 정확도 향상
   - 코사인 유사도 기반 임베딩 검색
@@ -134,7 +157,7 @@ Railway가 자동으로 빌드 및 배포합니다.
 ## 비용
 
 - **Railway**: $5/월 (Hobby Plan)
-- **OpenAI Embeddings**: ~$0.01/월 (예상 사용량 기준)
+- **Gemini Embeddings**: 무료 (100 RPM, 1,000 RPD)
 
 ## 라이선스
 

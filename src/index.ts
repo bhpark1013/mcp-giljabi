@@ -115,19 +115,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   console.error('🚀 MCP 길잡이 서버를 시작합니다...');
 
-  // OpenAI API 연결 확인
-  console.error('🔍 OpenAI API 연결 확인 중...');
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ OPENAI_API_KEY 환경변수가 설정되지 않았습니다.');
+  // Gemini API 연결 확인
+  console.error('🔍 Gemini API 연결 확인 중...');
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('❌ GEMINI_API_KEY 환경변수가 설정되지 않았습니다.');
     process.exit(1);
   }
 
   const embeddingReady = await checkEmbeddingService();
   if (!embeddingReady) {
-    console.error('❌ OpenAI Embedding API 연결 실패');
+    console.error('❌ Gemini Embedding API 연결 실패');
     process.exit(1);
   }
-  console.error('✅ OpenAI API 연결 성공');
+  console.error('✅ Gemini API 연결 성공');
 
   // MCP 데이터 초기화 (임베딩 포함)
   console.error('📚 MCP 데이터 초기화 중...');

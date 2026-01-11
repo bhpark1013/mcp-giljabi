@@ -11,19 +11,19 @@ import { initMcpData } from '../data/mcpCache.js';
 async function main() {
   console.log('🚀 MCP 임베딩 준비를 시작합니다...\n');
 
-  // OpenAI API 연결 확인
-  console.log('1️⃣ OpenAI API 연결 확인 중...');
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ OPENAI_API_KEY 환경변수가 설정되지 않았습니다.');
+  // Gemini API 연결 확인
+  console.log('1️⃣ Gemini API 연결 확인 중...');
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('❌ GEMINI_API_KEY 환경변수가 설정되지 않았습니다.');
     process.exit(1);
   }
 
   const embeddingReady = await checkEmbeddingService();
   if (!embeddingReady) {
-    console.error('❌ OpenAI API 연결 실패');
+    console.error('❌ Gemini API 연결 실패');
     process.exit(1);
   }
-  console.log('   ✅ OpenAI API 연결 성공\n');
+  console.log('   ✅ Gemini API 연결 성공\n');
 
   // MCP 데이터 및 임베딩 초기화
   console.log('2️⃣ MCP 데이터 및 임베딩 생성 중...');

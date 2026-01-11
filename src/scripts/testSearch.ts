@@ -23,18 +23,18 @@ const TEST_QUERIES = [
 async function main() {
   console.log('🧪 MCP 길잡이 검색 테스트\n');
 
-  // OpenAI API 연결 확인
-  if (!process.env.OPENAI_API_KEY) {
-    console.error('❌ OPENAI_API_KEY 환경변수가 설정되지 않았습니다.');
+  // Gemini API 연결 확인
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('❌ GEMINI_API_KEY 환경변수가 설정되지 않았습니다.');
     process.exit(1);
   }
 
   const embeddingReady = await checkEmbeddingService();
   if (!embeddingReady) {
-    console.error('❌ OpenAI API 연결 실패');
+    console.error('❌ Gemini API 연결 실패');
     process.exit(1);
   }
-  console.log('✅ OpenAI API 연결 성공\n');
+  console.log('✅ Gemini API 연결 성공\n');
 
   // 데이터 초기화
   console.log('📚 MCP 데이터 로드 중...\n');

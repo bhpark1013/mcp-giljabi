@@ -1,27 +1,27 @@
 /**
- * OpenAI 임베딩 서비스
- * text-embedding-3-small 모델 사용
+ * Google Gemini 임베딩 서비스
+ * gemini-embedding-001 모델 사용 (무료 티어)
  */
 
-import OpenAI from 'openai';
+import { GoogleGenerativeAI, TaskType } from '@google/generative-ai';
 
-const EMBEDDING_MODEL = 'text-embedding-3-small';
-const EMBEDDING_DIMENSIONS = 1536;
+const EMBEDDING_MODEL = 'gemini-embedding-001';
+const EMBEDDING_DIMENSIONS = 768; // 768, 1536, 3072 중 선택 가능
 
-let openaiClient: OpenAI | null = null;
+let genAI: GoogleGenerativeAI | null = null;
 
 /**
- * OpenAI 클라이언트 초기화
+ * Gemini 클라이언트 초기화
  */
-function getClient(): OpenAI {
-  if (!openaiClient) {
-    const apiKey = process.env.OPENAI_API_KEY;
+function getClient(): GoogleGenerativeAI {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY 환경변수가 설정되지 않았습니다.');
+      throw new Error('GEMINI_API_KEY 환경변수가 설정되지 않았습니다.');
     }
-    openaiClient = new OpenAI({ apiKey });
+    genAI = new GoogleGenerativeAI(apiKey);
   }
-  return openaiClient;
+  return genAI;
 }
 
 /**
@@ -29,14 +29,14 @@ function getClient(): OpenAI {
  */
 export async function embed(text: string): Promise<number[]> {
   const client = getClient();
+  const model = client.getGenerativeModel({ model: EMBEDDING_MODEL });
 
-  const response = await client.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: text,
-    dimensions: EMBEDDING_DIMENSIONS,
+  const result = await model.embedContent({
+    content: { parts: [{ text }], role: 'user' },
+    taskType: TaskType.RETRIEVAL_DOCUMENT,
   });
 
-  return response.data[0].embedding;
+  return result.embedding.values;
 }
 
 /**
@@ -44,31 +44,33 @@ export async function embed(text: string): Promise<number[]> {
  */
 export async function embedBatch(texts: string[]): Promise<number[][]> {
   const client = getClient();
+  const model = client.getGenerativeModel({ model: EMBEDDING_MODEL });
 
-  const response = await client.embeddings.create({
-    model: EMBEDDING_MODEL,
-    input: texts,
-    dimensions: EMBEDDING_DIMENSIONS,
+  const results = await model.batchEmbedContents({
+    requests: texts.map((text) => ({
+      content: { parts: [{ text }], role: 'user' as const },
+      taskType: TaskType.RETRIEVAL_DOCUMENT,
+    })),
   });
 
-  return response.data.map(item => item.embedding);
+  return results.embeddings.map((e) => e.values);
 }
 
 /**
- * OpenAI API 연결 확인
+ * Gemini API 연결 확인
  */
 export async function checkEmbeddingService(): Promise<boolean> {
   try {
     const client = getClient();
-    // 간단한 테스트 임베딩
-    await client.embeddings.create({
-      model: EMBEDDING_MODEL,
-      input: 'test',
-      dimensions: EMBEDDING_DIMENSIONS,
+    const model = client.getGenerativeModel({ model: EMBEDDING_MODEL });
+
+    await model.embedContent({
+      content: { parts: [{ text: 'test' }], role: 'user' },
+      taskType: TaskType.RETRIEVAL_DOCUMENT,
     });
     return true;
   } catch (error) {
-    console.error('OpenAI 연결 실패:', error);
+    console.error('Gemini 연결 실패:', error);
     return false;
   }
 }
