@@ -162,12 +162,16 @@ app.post('/message', async (req: Request, res: Response) => {
   // SSEServerTransport handles routing internally
   // This endpoint receives messages and routes them to the correct transport
   const sessionId = req.query.sessionId as string;
+  console.log('메시지 수신 - sessionId:', sessionId);
+  console.log('활성 세션:', Array.from(transports.keys()));
   const transport = transports.get(sessionId);
 
   if (transport) {
     // The transport handles the message internally
+    console.log('세션 찾음, 메시지 처리 중...');
     await transport.handlePostMessage(req, res);
   } else {
+    console.log('세션 찾기 실패!');
     res.status(404).json({ error: 'Session not found' });
   }
 });
