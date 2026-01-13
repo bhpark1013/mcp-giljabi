@@ -69,10 +69,10 @@ export async function findMcp(query: string): Promise<FindMcpResult> {
       };
     }
 
-    // MCP 상세 정보와 결합
+    // MCP 상세 정보와 결합 (ID 타입 불일치 처리: 캐시는 문자열, LLM은 숫자)
     const recommendations: McpRecommendation[] = llmResult.matches
       .map((match) => {
-        const mcpData = mcps.find((m) => m.id === match.id);
+        const mcpData = mcps.find((m) => String(m.id) === String(match.id));
         if (!mcpData) return null;
 
         return {
