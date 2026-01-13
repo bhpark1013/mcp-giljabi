@@ -11,7 +11,6 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "prepare-embeddings": "tsx src/scripts/prepareEmbeddings.ts",
     "test-search": "tsx src/scripts/testSearch.ts",
     "inspector": "npx @anthropic-ai/mcp-inspector dist/index.js"
   },

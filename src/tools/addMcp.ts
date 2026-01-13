@@ -3,7 +3,7 @@
  * MCP 설치 링크 및 안내를 제공합니다
  */
 
-import { getCachedMcps, McpWithEmbedding } from '../data/mcpCache.js';
+import { getCachedMcps, McpData } from '../data/mcpCache.js';
 import { getMcpPageUrl, fetchMcpDetail } from '../services/playmcpApi.js';
 
 export interface AddMcpResult {
@@ -18,7 +18,7 @@ export interface AddMcpResult {
 /**
  * MCP ID로 캐시에서 MCP 정보를 찾습니다
  */
-function findMcpById(mcpId: string): McpWithEmbedding | undefined {
+function findMcpById(mcpId: string): McpData | undefined {
   const mcps = getCachedMcps();
   if (!mcps) return undefined;
 
@@ -45,7 +45,6 @@ export async function addMcp(mcpId: string): Promise<AddMcpResult> {
         description: detail.description || '',
         developerName: detail.developerName || '',
         monthlyCallCount: detail.monthlyCallCount || 0,
-        embedding: [],
       };
     }
   }

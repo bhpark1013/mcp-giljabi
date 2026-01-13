@@ -17,7 +17,7 @@ import {
 import { initMcpData } from './data/mcpCache.js';
 import { findMcp, formatFindMcpResult } from './tools/findMcp.js';
 import { addMcp, formatAddMcpResult } from './tools/addMcp.js';
-import { checkEmbeddingService } from './services/embedding.js';
+import { checkLlmService } from './services/llm.js';
 
 const server = new Server(
   {
@@ -40,7 +40,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'find_mcp',
         description:
-          '사용자의 요청이나 필요한 기능에 맞는 MCP를 찾아줍니다. PlayMCP에 등록된 MCP들 중에서 시맨틱 검색을 통해 가장 관련성 높은 MCP들을 추천합니다. 예: "영화 정보", "맛집 검색", "날씨", "음악 추천" 등',
+          '사용자의 요청이나 필요한 기능에 맞는 MCP를 찾아줍니다. PlayMCP에 등록된 MCP들 중에서 AI가 직접 분석하여 가장 적합한 MCP를 추천합니다. 적합한 MCP가 없으면 없다고 알려줍니다. 예: "영화 정보", "맛집 검색", "날씨", "음악 추천" 등',
         inputSchema: {
           type: 'object',
           properties: {
@@ -122,14 +122,14 @@ async function main() {
     process.exit(1);
   }
 
-  const embeddingReady = await checkEmbeddingService();
-  if (!embeddingReady) {
-    console.error('❌ Gemini Embedding API 연결 실패');
+  const llmReady = await checkLlmService();
+  if (!llmReady) {
+    console.error('❌ Gemini Flash API 연결 실패');
     process.exit(1);
   }
-  console.error('✅ Gemini API 연결 성공');
+  console.error('✅ Gemini Flash API 연결 성공');
 
-  // MCP 데이터 초기화 (임베딩 포함)
+  // MCP 데이터 초기화
   console.error('📚 MCP 데이터 초기화 중...');
   try {
     const mcps = await initMcpData();

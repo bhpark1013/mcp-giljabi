@@ -4,8 +4,23 @@
 
 ## 기능
 
-- **find_mcp**: 사용자 요청에 맞는 MCP를 하이브리드 검색으로 찾습니다
+- **find_mcp**: AI가 직접 분석하여 적합한 MCP를 추천합니다. 적합한 MCP가 없으면 "없다"고 알려줍니다.
 - **add_mcp**: MCP 설치 방법을 안내합니다
+
+## 동작 방식
+
+```
+사용자: "영화 정보 검색해줘"
+         ↓
+   Gemini 2.0 Flash가 MCP 목록 분석
+         ↓
+적합한 MCP 추천 + 선택 이유 설명
+```
+
+**장점:**
+- 의도 파악이 정확함 ("심심해" → 게임/영화 추천)
+- 없는 기능은 "없다"고 명확히 답변 ("주식 정보" → 해당 MCP 없음)
+- 임베딩 계산/캐싱 불필요
 
 ## 사전 요구사항
 
@@ -45,21 +60,16 @@ npm start
 ### 1. 검색 기능 테스트
 
 ```bash
-# .env 파일에 GEMINI_API_KEY 설정 후
-npm run test-search
+GEMINI_API_KEY=your-api-key npm run test-search
 ```
 
 ### 2. MCP Inspector로 테스트
 
-MCP Inspector는 MCP 서버를 웹 UI로 테스트할 수 있는 도구입니다.
-
 ```bash
-# 빌드 후 실행
 npm run build
 GEMINI_API_KEY=your-api-key npm run inspector
+# http://localhost:5173 접속
 ```
-
-브라우저에서 http://localhost:5173 접속하여 테스트할 수 있습니다.
 
 ### 3. Claude Desktop에서 로컬 테스트
 
@@ -79,34 +89,9 @@ GEMINI_API_KEY=your-api-key npm run inspector
 }
 ```
 
-## Railway 배포
-
-### 1. GitHub 레포지토리 생성 및 푸시
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <your-repo-url>
-git push -u origin main
-```
-
-### 2. Railway 배포
-
-1. [railway.app](https://railway.app) 접속
-2. GitHub 로그인
-3. "New Project" → "Deploy from GitHub repo"
-4. 레포지토리 선택
-5. 환경 변수 설정:
-   - `GEMINI_API_KEY`: Gemini API 키
-
-### 3. 배포 완료
-
-Railway가 자동으로 빌드 및 배포합니다.
-
 ## 사용 예시
 
-### find_mcp
+### find_mcp - 결과 있음
 
 ```
 입력: "영화 정보를 검색하고 싶어"
@@ -116,48 +101,40 @@ Railway가 자동으로 빌드 및 배포합니다.
 
 1. **Movie Digging**
    📝 TMDb API를 활용하여 영화 정보를 검색하고 추천합니다
+   💡 사용자가 영화 정보 검색을 원하므로 가장 적합
    👤 개발자: 최용태
-   📊 월간 호출: 156회
-   🔗 https://playmcp.kakao.com/mcp/61
-   📈 관련도: 85%
+   📈 관련도: 95%
 ```
 
-### add_mcp
+### find_mcp - 결과 없음
 
 ```
-입력: mcpId = "61"
+입력: "주식 정보 알려줘"
 
 출력:
-🚀 **Movie Digging** 추가하기
+🔍 "주식 정보 알려줘" 검색 결과
 
-📎 링크: https://playmcp.kakao.com/mcp/61
+❌ 적합한 MCP를 찾지 못했습니다.
 
-📋 **설치 방법:**
-1. 아래 링크에 접속하세요
-2. 카카오 계정으로 로그인하세요
-3. '추가하기' 버튼을 클릭하세요
-4. Claude Desktop을 재시작하세요
+💬 현재 PlayMCP에 주식/증권 관련 MCP가 등록되어 있지 않습니다.
 ```
-
-## 캐싱
-
-- MCP 데이터와 임베딩은 `src/data/embeddings.json`에 캐싱됩니다
-- 캐시 유효기간: 24시간
-- 서버 시작 시 캐시가 없거나 만료되면 자동으로 새로 생성합니다
 
 ## 기술 스택
 
 - TypeScript / Node.js
 - MCP SDK (@modelcontextprotocol/sdk)
-- Google Gemini Embeddings (gemini-embedding-001)
-- 하이브리드 검색 (키워드 매칭 60% + 시맨틱 검색 40%)
-  - 한국어 키워드 매핑으로 정확도 향상
-  - 코사인 유사도 기반 임베딩 검색
+- Google Gemini 2.0 Flash Lite (LLM 기반 매칭)
 
 ## 비용
 
 - **Railway**: $5/월 (Hobby Plan)
-- **Gemini Embeddings**: 무료 (100 RPM, 1,000 RPD)
+- **Gemini 2.0 Flash Lite**: 무료 (일일 1,500 요청)
+
+## Rate Limit
+
+Gemini 무료 티어 제한:
+- 분당 15 요청
+- 일일 1,500 요청
 
 ## 라이선스
 
