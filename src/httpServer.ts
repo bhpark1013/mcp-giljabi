@@ -126,6 +126,8 @@ app.get('/health', (_req: Request, res: Response) => {
     status: 'ok',
     service: 'mcp-giljabi',
     mcpCount: mcps?.length || 0,
+    activeSessions: transports.size,
+    sessionIds: Array.from(transports.keys()),
     timestamp: new Date().toISOString(),
   });
 });
