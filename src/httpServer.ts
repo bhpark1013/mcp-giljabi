@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+// Note: express.json()은 특정 경로에만 적용 (SSE message는 raw body 필요)
 
 // Store active transports
 const transports: Map<string, SSEServerTransport> = new Map();
@@ -179,7 +179,7 @@ app.post('/message', async (req: Request, res: Response) => {
 });
 
 // REST API endpoints (alternative to SSE for simple testing)
-app.post('/api/find-mcp', async (req: Request, res: Response) => {
+app.post('/api/find-mcp', express.json(), async (req: Request, res: Response) => {
   try {
     const { query } = req.body;
     if (!query) {
@@ -194,7 +194,7 @@ app.post('/api/find-mcp', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/add-mcp', async (req: Request, res: Response) => {
+app.post('/api/add-mcp', express.json(), async (req: Request, res: Response) => {
   try {
     const { mcpId } = req.body;
     if (!mcpId) {
