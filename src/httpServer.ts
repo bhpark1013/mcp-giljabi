@@ -135,8 +135,10 @@ app.get('/sse', async (req: Request, res: Response) => {
   console.log('SSE 연결 요청');
 
   const transport = new SSEServerTransport('/message', res);
-  const sessionId = Date.now().toString();
+  // SSEServerTransport의 내부 sessionId 사용
+  const sessionId = transport.sessionId;
   transports.set(sessionId, transport);
+  console.log('세션 ID:', sessionId);
 
   const server = createMcpServer();
 
