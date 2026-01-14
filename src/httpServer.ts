@@ -332,3 +332,5 @@ startHttpServer().catch((error) => {
   console.error('서버 시작 오류:', error);
   process.exit(1);
 });
+
+// Force rebuild: 1768392638
