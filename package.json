@@ -1,6 +1,6 @@
 {
   "name": "mcp-giljabi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP 길잡이 - PlayMCP에서 적합한 MCP를 찾아주는 서비스",
   "main": "dist/index.js",
   "type": "module",

@@ -123,27 +123,58 @@ app.get('/health', (_req, res) => {
         timestamp: new Date().toISOString(),
     });
 });
-// SSE endpoint for MCP communication
-app.get('/sse', async (req, res) => {
-    console.log('SSE 연결 요청');
-    const transport = new SSEServerTransport('/message', res);
-    // SSEServerTransport의 내부 sessionId 사용
-    const sessionId = transport.sessionId;
-    transports.set(sessionId, transport);
-    console.log('세션 ID:', sessionId);
-    const server = createMcpServer();
-    // Handle client disconnect
-    req.on('close', () => {
-        console.log('SSE 연결 종료:', sessionId);
-        transports.delete(sessionId);
-    });
-    try {
-        await server.connect(transport);
-        console.log('MCP 서버 연결 완료:', sessionId);
+// SSE endpoint for MCP communication (handles both SSE transport and Streamable HTTP patterns)
+app.all('/sse', async (req, res) => {
+    console.log(`SSE 엔드포인트 요청: ${req.method}`);
+    if (req.method === 'GET') {
+        // Traditional SSE transport - GET request opens SSE stream
+        console.log('SSE 연결 요청 (GET)');
+        const transport = new SSEServerTransport('/message', res);
+        const sessionId = transport.sessionId;
+        transports.set(sessionId, transport);
+        console.log('세션 ID:', sessionId);
+        const server = createMcpServer();
+        req.on('close', () => {
+            console.log('SSE 연결 종료:', sessionId);
+            transports.delete(sessionId);
+        });
+        try {
+            await server.connect(transport);
+            console.log('MCP 서버 연결 완료:', sessionId);
+        }
+        catch (error) {
+            console.error('MCP 서버 연결 실패:', error);
+            transports.delete(sessionId);
+        }
     }
-    catch (error) {
-        console.error('MCP 서버 연결 실패:', error);
-        transports.delete(sessionId);
+    else if (req.method === 'POST') {
+        // Streamable HTTP pattern - POST request sends message
+        console.log('SSE POST 요청 (Streamable HTTP 패턴)');
+        const sessionId = req.headers['mcp-session-id'];
+        console.log('  Session ID from header:', sessionId);
+        let transport = sessionId ? streamableTransports.get(sessionId) : undefined;
+        if (!transport) {
+            // Create new transport for this session
+            transport = new StreamableHTTPServerTransport({
+                sessionIdGenerator: () => randomUUID(),
+            });
+            const server = createMcpServer();
+            await server.connect(transport);
+            const newSessionId = transport.sessionId;
+            if (newSessionId) {
+                streamableTransports.set(newSessionId, transport);
+                console.log('  새 Streamable 세션 생성:', newSessionId);
+            }
+        }
+        await transport.handleRequest(req, res);
+        // Store session if not already stored
+        if (transport.sessionId && !streamableTransports.has(transport.sessionId)) {
+            streamableTransports.set(transport.sessionId, transport);
+            console.log('  세션 등록:', transport.sessionId);
+        }
+    }
+    else {
+        res.status(405).json({ error: 'Method not allowed' });
     }
 });
 // Message endpoint for SSE transport
