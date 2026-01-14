@@ -137,8 +137,10 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: 'mcp-giljabi',
+    version: '1.1.0', // 배포 확인용 버전
     mcpCount: mcps?.length || 0,
     activeSessions: transports.size,
+    streamableSessions: streamableTransports.size,
     sessionIds: Array.from(transports.keys()),
     timestamp: new Date().toISOString(),
   });
@@ -332,5 +334,3 @@ startHttpServer().catch((error) => {
   console.error('서버 시작 오류:', error);
   process.exit(1);
 });
-
-// Force rebuild: 1768392638
