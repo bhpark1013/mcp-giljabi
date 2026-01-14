@@ -23,6 +23,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 // Note: express.json()은 특정 경로에만 적용 (SSE message는 raw body 필요)
 
+// 요청 로깅 미들웨어
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('  Headers:', JSON.stringify(req.headers, null, 2).substring(0, 500));
+  next();
+});
+
 // Store active transports
 const transports: Map<string, SSEServerTransport> = new Map();
 
