@@ -5,8 +5,10 @@
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import { randomUUID } from 'crypto';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -30,8 +32,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Store active transports
+// Store active transports (SSE용)
 const transports: Map<string, SSEServerTransport> = new Map();
+
+// Store active Streamable HTTP transports (newer pattern)
+const streamableTransports: Map<string, StreamableHTTPServerTransport> = new Map();
 
 /**
  * MCP 서버 인스턴스 생성
@@ -185,6 +190,58 @@ app.post('/message', async (req: Request, res: Response) => {
   }
 });
 
+// Streamable HTTP MCP endpoint (newer pattern - single endpoint for all MCP communication)
+// This is the recommended pattern and what PlayMCP may expect
+app.all('/mcp', async (req: Request, res: Response) => {
+  console.log('MCP Streamable HTTP 요청:', req.method);
+
+  // Get or create session based on mcp-session-id header
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  console.log('  Session ID from header:', sessionId);
+
+  let transport = sessionId ? streamableTransports.get(sessionId) : undefined;
+
+  // For new connections or initialize requests, create new transport
+  if (!transport) {
+    if (req.method === 'POST' || req.method === 'GET') {
+      // Create new transport with session ID generator
+      transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: () => randomUUID(),
+      });
+
+      const server = createMcpServer();
+
+      // Connect server to transport
+      await server.connect(transport);
+
+      // Store transport after connection (transport.sessionId is set during first request handling)
+      // We'll update the map after handling the request
+      const newSessionId = transport.sessionId;
+      if (newSessionId) {
+        streamableTransports.set(newSessionId, transport);
+        console.log('  새 세션 생성:', newSessionId);
+      }
+
+      // Handle the request
+      await transport.handleRequest(req, res);
+
+      // If sessionId was assigned after handling, store it
+      if (!newSessionId && transport.sessionId) {
+        streamableTransports.set(transport.sessionId, transport);
+        console.log('  세션 등록:', transport.sessionId);
+      }
+      return;
+    } else {
+      // For DELETE or other methods without valid session
+      res.status(400).json({ error: 'Invalid request: no valid session' });
+      return;
+    }
+  }
+
+  // Handle request with existing transport
+  await transport.handleRequest(req, res);
+});
+
 // REST API endpoints (alternative to SSE for simple testing)
 app.post('/api/find-mcp', express.json(), async (req: Request, res: Response) => {
   try {
@@ -264,7 +321,8 @@ async function startHttpServer(): Promise<void> {
   app.listen(PORT, () => {
     console.log(`✅ HTTP 서버가 포트 ${PORT}에서 시작되었습니다!`);
     console.log(`   - Health: http://localhost:${PORT}/health`);
-    console.log(`   - SSE: http://localhost:${PORT}/sse`);
+    console.log(`   - MCP (Streamable HTTP): http://localhost:${PORT}/mcp`);
+    console.log(`   - SSE (Legacy): http://localhost:${PORT}/sse`);
     console.log(`   - API: http://localhost:${PORT}/api/find-mcp`);
   });
 }
